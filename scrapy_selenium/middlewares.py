@@ -99,7 +99,11 @@ class SeleniumMiddleware:
         if not isinstance(request, SeleniumRequest):
             return None
 
-        self.driver.get(request.url)
+        if callable(request.cb_selenium):
+            kwargs = request.cb_selenium_kwargs if request.cb_selenium_kwargs else {}
+            request.cb_selenium(request.url, self.driver, **kwargs)
+        else:
+            self.driver.get(request.url)
 
         for cookie_name, cookie_value in request.cookies.items():
             self.driver.add_cookie(
@@ -119,11 +123,6 @@ class SeleniumMiddleware:
 
         if request.script:
             self.driver.execute_async_script(request.script)
-
-        if request.after_wait_until:
-            WebDriverWait(self.driver, request.wait_time).until(
-              request.after_wait_until
-            )
 
         body = str.encode(self.driver.page_source)
 
