@@ -120,6 +120,11 @@ class SeleniumMiddleware:
         if request.script:
             self.driver.execute_async_script(request.script)
 
+        if request.after_wait_until:
+            WebDriverWait(self.driver, request.wait_time).until(
+              request.after_wait_until
+            )
+
         body = str.encode(self.driver.page_source)
 
         # Expose the driver via the "meta" attribute
